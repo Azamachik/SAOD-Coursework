@@ -1,135 +1,202 @@
-#pragma once
+﻿#pragma once
 #include "TramPark.h"
 #include <iostream>
+#include <vector>
 
 using namespace std;
 
-class CityTransport
-{
+const int MAX_PARKS = 2; 
+
+class CityTransport {
 private:
     struct ParkNode {
         int parkNumber;
         TramPark* park;
-        ParkNode* next;
-        ParkNode* prev;
+        int next; 
+        bool used; 
     };
 
-    ParkNode* head;
+    ParkNode parksArray[MAX_PARKS];
+    int head;
+    int freeList; 
+
+    void InitFreeList() {
+        for (int i = 0; i < MAX_PARKS - 1; i++) {
+            parksArray[i].next = i + 1;
+            parksArray[i].used = false;
+        }
+        parksArray[MAX_PARKS - 1].next = -1;
+        parksArray[MAX_PARKS - 1].used = false;
+        freeList = 0;
+    }
+
+    int AllocateNode() {
+        if (freeList == -1) return -1; 
+        int index = freeList;
+        freeList = parksArray[freeList].next;
+        parksArray[index].used = true;
+        parksArray[index].next = -1;
+        return index;
+    }
+
+    void FreeNode(int index) {
+        parksArray[index].next = freeList;
+        parksArray[index].used = false;
+        freeList = index;
+    }
 
 public:
-    CityTransport() {
-        head = new ParkNode();
-        head->parkNumber = -1;
-        head->park = new TramPark(-1);
-        head->next = head;
-        head->prev = head;
+    CityTransport() : head(-1) {
+        InitFreeList();
     }
 
     bool AddPark(int parkNumber) {
-        ParkNode* current = head->next;
-        while (current != head) {
-            if (current->parkNumber == parkNumber) {
-                return false; 
+        int current = head;
+        while (current != -1) {
+            if (parksArray[current].parkNumber == parkNumber) {
+                cout << "Ошибка: парк с номером " << parkNumber << " уже существует!\n";
+                return false;
             }
-            current = current->next;
+            current = parksArray[current].next;
         }
 
-        ParkNode* newNode = new ParkNode();
-        newNode->parkNumber = parkNumber;
-        newNode->park = new TramPark(parkNumber);
-
-        current = head->next;
-        while (current != head && current->parkNumber < parkNumber) {
-            current = current->next;
+        if (freeList == -1) {
+            cout << "Ошибка: достигнуто максимальное количество парков (" << MAX_PARKS << ")!\n";
+            return false;
         }
 
-        newNode->next = current;
-        newNode->prev = current->prev;
-        current->prev->next = newNode;
-        current->prev = newNode;
+        int newNodeIndex = AllocateNode();
+        if (newNodeIndex == -1) {
+            cout << "Ошибка: невозможно добавить парк (внутренняя ошибка)!\n";
+            return false;
+        }
 
+        parksArray[newNodeIndex].parkNumber = parkNumber;
+        parksArray[newNodeIndex].park = new TramPark(parkNumber);
+
+        if (head == -1 || parksArray[head].parkNumber > parkNumber) {
+            parksArray[newNodeIndex].next = head;
+            head = newNodeIndex;
+            cout << "Трамвайный парк №" << parkNumber << " успешно добавлен.\n";
+            return true;
+        }
+
+        current = head;
+        int prev = -1;
+        while (current != -1 && parksArray[current].parkNumber < parkNumber) {
+            prev = current;
+            current = parksArray[current].next;
+        }
+
+        parksArray[newNodeIndex].next = current;
+        if (prev != -1) {
+            parksArray[prev].next = newNodeIndex;
+        }
+
+        cout << "Трамвайный парк №" << parkNumber << " успешно добавлен.\n";
         return true;
     }
+
     bool RemovePark(int parkNumber) {
-        ParkNode* current = head->next;
-        while (current != head && current->parkNumber != parkNumber) {
-            current = current->next;
+        int current = head;
+        int prev = -1;
+
+        while (current != -1 && parksArray[current].parkNumber != parkNumber) {
+            prev = current;
+            current = parksArray[current].next;
         }
 
-        if (current == head) return false;
+        if (current == -1) return false; 
 
-        current->prev->next = current->next;
-        current->next->prev = current->prev;
-        delete current->park;
-        delete current;
+        if (prev == -1) {
+            head = parksArray[current].next;
+        }
+        else {
+            parksArray[prev].next = parksArray[current].next;
+        }
+
+        delete parksArray[current].park;
+        FreeNode(current);
         return true;
-    }
-
-    ParkNode* GetFirstPark() const {
-        return head->next;
     }
 
     TramPark* FindPark(int parkNumber) {
-        ParkNode* current = head->next;
-        while (current != head && current->parkNumber != parkNumber) {
-            current = current->next;
+        int current = head;
+        while (current != -1) {
+            if (parksArray[current].parkNumber == parkNumber) {
+                return parksArray[current].park;
+            }
+            current = parksArray[current].next;
         }
-        return (current != head) ? current->park : NULL;
+        return nullptr;
     }
 
     void ShowParks() {
-        ParkNode* current = head->next;
-        while (current != head) {
-            cout << "���������� ���� �" << current->parkNumber << ":" << endl;
-            current->park->ShowTrams();
+        int current = head;
+        while (current != -1) {
+            cout << "Трамвайный парк №" << parksArray[current].parkNumber << ":" << endl;
+            parksArray[current].park->ShowTrams();
             cout << endl;
-            current = current->next;
+            current = parksArray[current].next;
         }
     }
 
     string GetString() {
         string result;
-        ParkNode* current = head->next;
-        while (current != head) {
-            result += to_string(current->parkNumber) + " " + current->park->GetString() + "\n";
-            current = current->next;
+        int current = head;
+        while (current != -1) {
+            result += to_string(parksArray[current].parkNumber) + " " +
+                parksArray[current].park->GetString() + "\n";
+            current = parksArray[current].next;
         }
         return result;
     }
 
     void FindTram(const string& model) {
-        bool found = false;
-        ParkNode* currentPark = head->next;
+        bool foundAny = false;
+        int current = head;
 
-        while (currentPark != head) {
-            Tram* tram = currentPark->park->FindTram(model);
+        while (current != -1) {
+            TramPark* park = parksArray[current].park;
+            TramPark::Node* node = park->GetHead()->next;
 
-            if (tram != nullptr) {
-                if (!found) {
-                    cout << "��������� ������� ����� \"" << model << "\":" << endl;
-                    found = true;
+            vector<Tram*> matchedTrams;
+
+            while (node != nullptr) {
+                if (node->data->GetModel() == model) {
+                    matchedTrams.push_back(node->data);
                 }
-                cout << "���� �" << currentPark->parkNumber << ": "
-                    << "�����: " << tram->GetModel()
-                    << ", ��� �������: " << tram->GetYear() << endl;
+                node = node->next;
             }
-            currentPark = currentPark->next;
+
+            if (!matchedTrams.empty()) {
+                if (!foundAny) {
+                    cout << "Найденные трамваи марки \"" << model << "\":" << endl;
+                    foundAny = true;
+                }
+
+                cout << "Парк №" << parksArray[current].parkNumber << ":\n";
+                for (const auto& tram : matchedTrams) {
+                    cout << "  Марка: " << tram->GetModel()
+                        << ", Год выпуска: " << tram->GetYear() << endl;
+                }
+            }
+
+            current = parksArray[current].next;
         }
 
-        if (!found) {
-            cout << "������� ����� \"" << model << "\" �� �������." << endl;
+        if (!foundAny) {
+            cout << "Трамваи марки \"" << model << "\" не найдены.\n";
         }
     }
 
     ~CityTransport() {
-        ParkNode* current = head->next;
-        while (current != head) {
-            ParkNode* temp = current;
-            current = current->next;
-            delete temp->park;
-            delete temp;
+        int current = head;
+        while (current != -1) {
+            delete parksArray[current].park;
+            int next = parksArray[current].next;
+            parksArray[current].used = false;
+            current = next;
         }
-        delete head->park;
-        delete head;
     }
 };

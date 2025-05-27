@@ -6,7 +6,7 @@ using namespace std;
 
 class TramPark
 {
-private:
+public:
     struct Node {
         Tram* data;
         Node* next;
@@ -16,7 +16,6 @@ private:
     Node* rear;
     int parkNumber;
 
-public:
     TramPark(int number) {
         head = new Node();
         head->data = new Tram();
@@ -79,11 +78,13 @@ public:
         }
         return false;
     }
-
+    Node* GetHead() const {
+        return head;
+    }
     void ShowTrams() {
         Node* current = head->next;
         while (current != NULL) {
-            cout << "Марка: " << current->data->GetModel()
+            cout << "   Марка: " << current->data->GetModel()
                 << ", Год выпуска: " << current->data->GetYear() << endl;
             current = current->next;
         }

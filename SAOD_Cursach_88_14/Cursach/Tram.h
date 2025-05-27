@@ -31,6 +31,5 @@ public:
         theTram.year = 0;
     };
 
-    ~Tram() {
-    };
+    ~Tram() { };
 };

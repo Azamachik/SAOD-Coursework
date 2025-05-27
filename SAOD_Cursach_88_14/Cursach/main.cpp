@@ -21,20 +21,12 @@ int failure() {
     }
     return a;
 }
-
 void AddPark() {
     int parkNumber;
     cout << "Введите номер трамвайного парка: ";
     parkNumber = failure();
-
-    if (transport->AddPark(parkNumber)) {
-        cout << "Трамвайный парк №" + to_string(parkNumber) + " добавлен.\n";
-    }
-    else {
-        cout << "Ошибка: парк с номером " + to_string(parkNumber) + " уже существует!\n";
-    }
+    transport->AddPark(parkNumber);
 }
-
 void RemovePark() {
     int parkNumber;
     cout << "Введите номер трамвайного парка для удаления: ";
@@ -77,7 +69,7 @@ void AddTram() {
     string model;
     int year;
 
-    cout << "Введите марку трамвая (латинскими буквами): ";
+    cout << "Введите марку трамвая: ";
     cin.clear(); cin.ignore(32767, '\n'); getline(cin, model);
     cout << "Введите год выпуска: ";
     year = failure();
@@ -106,7 +98,7 @@ void RemoveTram() {
     }
 
     string model;
-    cout << "Введите марку трамвая для удаления (латинскими буквами): ";
+    cout << "Введите марку трамвая для удаления: ";
     cin.clear(); cin.ignore(32767, '\n'); getline(cin, model);
 
     if (park->RemoveTram(model)) {
@@ -127,23 +119,22 @@ void FindTram() {
     transport->FindTram(model);
 }
 
-//void setupConsole() {
-//#ifdef _WIN32
-//    // Для Windows
-//    _setmode(_fileno(stdout), _O_U16TEXT);
-//    _setmode(_fileno(stdin), _O_U16TEXT);
-//    _setmode(_fileno(stderr), _O_U16TEXT);
-//    SetConsoleOutputCP(CP_UTF8);
-//    SetConsoleCP(CP_UTF8);
-//#else
-//    // Для Linux/Mac
-//    setlocale(LC_ALL, "ru_RU.UTF-8");
-//#endif
-//}
+void setupConsole() {
+    //_setmode(_fileno(stdout), _O_U16TEXT);
+    //_setmode(_fileno(stdin), _O_U16TEXT);
+    //_setmode(_fileno(stderr), _O_U16TEXT);
+    SetConsoleOutputCP(CP_UTF8);
+    SetConsoleCP(CP_UTF8);
+    std::ios::sync_with_stdio(false);
+    std::locale::global(std::locale(""));
+
+}
 
 
 int main() {
     //setupConsole();
+    //system("chcp 65001"); // Принудительно устанавливаем UTF-8
+
     setlocale(LC_ALL, "Russian");
     transport = new CityTransport();
 
@@ -162,7 +153,6 @@ int main() {
         cout << "6. Найти трамвай\n";
         cout << "7. Показать все парки\n";
         cout << "8. Сохранить изменения в файл\n";
-        cout << "9. Полностью очистить содержимое\n";
         cout << "0. Выход\n";
         cout << "Выберите действие: ";
 
