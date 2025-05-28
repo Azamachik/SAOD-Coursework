@@ -5,7 +5,7 @@
 
 using namespace std;
 
-const int MAX_PARKS = 2; 
+const int MAX_PARKS = 10; 
 
 class CityTransport {
 private:
@@ -51,6 +51,11 @@ public:
     }
 
     bool AddPark(int parkNumber) {
+        if (parkNumber <= 0) {
+            cout << "Ошибка: номер парка должен быть положительным числом!\n";
+            return false;
+        }
+
         int current = head;
         while (current != -1) {
             if (parksArray[current].parkNumber == parkNumber) {

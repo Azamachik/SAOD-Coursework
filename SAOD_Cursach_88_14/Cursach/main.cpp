@@ -7,6 +7,7 @@
 #ifdef max
 #undef max
 #endif
+
 using namespace std;
 
 CityTransport* transport = NULL;
@@ -23,8 +24,18 @@ int failure() {
 }
 void AddPark() {
     int parkNumber;
-    cout << "Введите номер трамвайного парка: ";
-    parkNumber = failure();
+    bool validInput = false;
+    while (!validInput) {
+        cout << "Введите номер трамвайного парка: ";
+        parkNumber = failure();
+
+        if (parkNumber <= 0) {
+            cout << "Ошибка: номер парка должен быть положительным числом! (должен быть > 0)\n";
+        }
+        else {
+            validInput = true;
+        }
+    }
     transport->AddPark(parkNumber);
 }
 void RemovePark() {
@@ -67,12 +78,35 @@ void AddTram() {
     }
 
     string model;
-    int year;
+    int year = 0;
 
-    cout << "Введите марку трамвая: ";
-    cin.clear(); cin.ignore(32767, '\n'); getline(cin, model);
-    cout << "Введите год выпуска: ";
-    year = failure();
+    bool validModel = false;
+    while (!validModel) {
+        cout << "Введите марку трамвая: ";
+        cin.clear();
+        cin.ignore(32767, '\n');
+        getline(cin, model);
+
+        for (char c : model) {
+            if (isalpha(c)) {
+                validModel = true;
+                break;
+            }
+        }
+
+        if (!validModel) {
+            cout << "Ошибка: название модели должно содержать хотя бы одну букву!\n";
+        }
+    }
+
+    while (year <= 0) {
+        cout << "Введите год выпуска: ";
+        year = failure();
+
+        if (year <= 0) {
+            cout << "Ошибка: год выпуска должен быть положительным числом!\n";
+        }
+    }
 
     Tram* tram = new Tram();
     tram->Set(model, year);
@@ -96,7 +130,6 @@ void RemoveTram() {
         cout << "Трамвайный парк не найден.\n";
         return;
     }
-
     string model;
     cout << "Введите марку трамвая для удаления: ";
     cin.clear(); cin.ignore(32767, '\n'); getline(cin, model);
@@ -119,22 +152,7 @@ void FindTram() {
     transport->FindTram(model);
 }
 
-void setupConsole() {
-    //_setmode(_fileno(stdout), _O_U16TEXT);
-    //_setmode(_fileno(stdin), _O_U16TEXT);
-    //_setmode(_fileno(stderr), _O_U16TEXT);
-    SetConsoleOutputCP(CP_UTF8);
-    SetConsoleCP(CP_UTF8);
-    std::ios::sync_with_stdio(false);
-    std::locale::global(std::locale(""));
-
-}
-
-
 int main() {
-    //setupConsole();
-    //system("chcp 65001"); // Принудительно устанавливаем UTF-8
-
     setlocale(LC_ALL, "Russian");
     transport = new CityTransport();
 
