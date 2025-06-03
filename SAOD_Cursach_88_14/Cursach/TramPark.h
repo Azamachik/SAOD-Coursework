@@ -16,6 +16,15 @@ public:
     Node* rear;
     int parkNumber;
 
+    TramPark() {
+        head = new Node();
+        head->data = new Tram();
+        head->data->Set("<HEAD>", 0);
+        head->next = NULL;
+        rear = head;
+        parkNumber = 0;
+    }
+
     TramPark(int number) {
         head = new Node();
         head->data = new Tram();
@@ -37,19 +46,6 @@ public:
         return true;
     }
 
-    Tram* Dequeue() {
-        if (head->next == NULL) return NULL;
-
-        Node* temp = head->next;
-        Tram* tram = temp->data;
-
-        head->next = temp->next;
-        if (temp == rear) rear = head;
-
-        delete temp;
-        return tram;
-    }
-
     Tram* FindTram(const string& model) const {
         Node* current = head->next;
         while (current != nullptr) {
@@ -61,7 +57,7 @@ public:
         return nullptr;
     }
 
-    bool RemoveTram(string model) {
+    bool Dequeue(string model) {
         Node* prev = head;
         Node* current = head->next;
 
@@ -109,5 +105,7 @@ public:
         }
         delete head->data;
         delete head;
+        head = nullptr;
+        rear = nullptr;
     }
 };

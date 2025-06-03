@@ -134,7 +134,7 @@ void RemoveTram() {
     cout << "Введите марку трамвая для удаления: ";
     cin.clear(); cin.ignore(32767, '\n'); getline(cin, model);
 
-    if (park->RemoveTram(model)) {
+    if (park->Dequeue(model)) {
         cout << "Трамвай удален из парка №" << parkNumber << ".\n";
     }
     else {

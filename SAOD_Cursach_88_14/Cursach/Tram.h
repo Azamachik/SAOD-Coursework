@@ -18,6 +18,11 @@ public:
         theTram.year = 0;
     }
 
+    Tram(string model, int year) {
+        theTram.model = model;
+        theTram.year = year;
+    }
+
     void Set(string _model, int _year) {
         theTram.model = _model;
         theTram.year = _year;
@@ -31,5 +36,7 @@ public:
         theTram.year = 0;
     };
 
-    ~Tram() { };
+    ~Tram() {
+        Clear();
+    };
 };
